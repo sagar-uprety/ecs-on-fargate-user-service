@@ -30,82 +30,272 @@ content = """
 Install terraform-docs or download from terraform-docs github repo.
 
 # Generate README.md file with .pre-commit-config.yaml configuration
-# go1.17+
-`go install github.com/terraform-docs/terraform-docs@v0.16.0`
+### 1. Install dependencies
+
+<!-- markdownlint-disable no-inline-html -->
+
+* [`pre-commit`](https://pre-commit.com/#install),
+  <sub><sup>[`terraform`](https://www.terraform.io/downloads.html),
+  <sub><sup>[`git`](https://git-scm.com/downloads),
+  <sub><sup>POSIX compatible shell,
+  <sub><sup>Internet connection (on first run),
+  <sub><sup>x86_64 or arm64 compatible operation system,
+  <sub><sup>Some hardware where this OS will run,
+  <sub><sup>Electricity for hardware and internet connection,
+  <sub><sup>Some basic physical laws,
+  <sub><sup>Hope that it all will work.
+  </sup></sub></sup></sub></sup></sub></sup></sub></sup></sub></sup></sub></sup></sub></sup></sub></sup></sub><br><br>
+* [`checkov`](https://github.com/bridgecrewio/checkov) required for `checkov` hook.
+* [`terraform-docs`](https://github.com/terraform-docs/terraform-docs) required for `terraform_docs` hook.
+* [`terragrunt`](https://terragrunt.gruntwork.io/docs/getting-started/install/) required for `terragrunt_validate` hook.
+* [`terrascan`](https://github.com/tenable/terrascan) required for `terrascan` hook.
+* [`TFLint`](https://github.com/terraform-linters/tflint) required for `terraform_tflint` hook.
+* [`TFSec`](https://github.com/liamg/tfsec) required for `terraform_tfsec` hook.
+* [`infracost`](https://github.com/infracost/infracost) required for `infracost_breakdown` hook.
+* [`jq`](https://github.com/stedolan/jq) required for `terraform_validate` with `--retry-once-with-cleanup` flag, and for `infracost_breakdown` hook.
+* [`tfupdate`](https://github.com/minamijoyo/tfupdate) required for `tfupdate` hook.
+* [`hcledit`](https://github.com/minamijoyo/hcledit) required for `terraform_wrapper_module_for_each` hook.
+
+<details><summary><b>Docker</b></summary><br>
+
+**Pull docker image with all hooks**:
+
+```bash
+TAG=latest
+docker pull ghcr.io/antonbabenko/pre-commit-terraform:$TAG
+```
+
+All available tags [here](https://github.com/antonbabenko/pre-commit-terraform/pkgs/container/pre-commit-terraform/versions).
+
+**Build from scratch**:
+
+> **Note**: To build image you need to have [`docker buildx`](https://docs.docker.com/build/install-buildx/) enabled as default builder.  
+> Otherwise - provide `TARGETOS` and `TARGETARCH` as additional `--build-arg`'s to `docker build`.
+
+When hooks-related `--build-arg`s are not specified, only the latest version of `pre-commit` and `terraform` will be installed.
+
+```bash
+git clone git@github.com:antonbabenko/pre-commit-terraform.git
+cd pre-commit-terraform
+# Install the latest versions of all the tools
+docker build -t pre-commit-terraform --build-arg INSTALL_ALL=true .
+```
+
+To install a specific version of individual tools, define it using `--build-arg` arguments or set it to `latest`:
+
+```bash
+docker build -t pre-commit-terraform \
+    --build-arg PRE_COMMIT_VERSION=latest \
+    --build-arg TERRAFORM_VERSION=latest \
+    --build-arg CHECKOV_VERSION=2.0.405 \
+    --build-arg INFRACOST_VERSION=latest \
+    --build-arg TERRAFORM_DOCS_VERSION=0.15.0 \
+    --build-arg TERRAGRUNT_VERSION=latest \
+    --build-arg TERRASCAN_VERSION=1.10.0 \
+    --build-arg TFLINT_VERSION=0.31.0 \
+    --build-arg TFSEC_VERSION=latest \
+    --build-arg TFUPDATE_VERSION=latest \
+    --build-arg HCLEDIT_VERSION=latest \
+    .
+```
+
+Set `-e PRE_COMMIT_COLOR=never` to disable the color output in `pre-commit`.
+
+</details>
 
 
-2. Configure a default configuration file named .terraform-docs.yml that can be used for all README.md generation. Add below content for some better customisations:
+<details><summary><b>MacOS</b></summary><br>
 
-``` yaml
-formatter: "markdown table" # this is requiredversion: "0.16"header-from: main.tf
-footer-from: ""recursive:
-  enabled: false
-  path: ""sections:
-  hide: []
-  show: []  hide-all: false # deprecated in v0.13.0, removed in v0.15.0
-  show-all: true  # deprecated in v0.13.0, removed in v0.15.0content: |-
-  {{ .Requirements }}  ## Usage
-  Basic usage of this module is as follows:```hcl
-  module "example" {
-    {{"\t"}} source  = "<module-path>"{{- if .Module.RequiredInputs }}
-    {{"\n\t"}} # Required variables
-    {{- range .Module.RequiredInputs }}
-    {{"\t"}} {{ .Name }}  = {{ .GetValue }}
-    {{- end }}
-    {{- end }}{{- if .Module.OptionalInputs }}
-    {{"\n\t"}} # Optional variables
-    {{- range .Module.OptionalInputs }}
-    {{"\t"}} {{ .Name }}  = {{ .GetValue | printf "%s" }}
-    {{- end }}
-    {{- end }}
-  }
-  ```{{ .Resources }}{{ .Inputs }}{{ .Outputs }}output:
-  file: README.md
-  mode: inject
-  template: |-
-      <!-- BEGIN_AUTOMATED_TF_DOCS_BLOCK -->
-      {{ .Content }}
-      <!-- END_AUTOMATED_TF_DOCS_BLOCK -->output-values:
-  enabled: false
-  from: ""sort:
-  enabled: true
-  by: namesettings:
-  anchor: true
-  color: true
-  default: true
-  description: true
-  escape: true
-  hide-empty: false
-  html: true
-  indent: 2
-  lockfile: true
-  read-comments: true
-  required: true
-  sensitive: true
-  type: true
-  ```
+```bash
+brew install pre-commit terraform-docs tflint tfsec checkov terrascan infracost tfupdate minamijoyo/hcledit/hcledit jq
+```
 
-3. In this step, we will setup/configure README.md in the TF codebase:
+</details>
 
-    Create a README.md inside terraform modules and provide some introductory details about modules. Refer below README.md
+<details><summary><b>Ubuntu 18.04</b></summary><br>
 
-# TF code base## Introduction
-This is sample readme for terraform module
+```bash
+sudo apt update
+sudo apt install -y unzip software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt install -y python3.7 python3-pip
+python3 -m pip install --upgrade pip
+pip3 install --no-cache-dir pre-commit
+python3.7 -m pip install -U checkov
+curl -L "$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest | grep -o -E -m 1 "https://.+?-linux-amd64.tar.gz")" > terraform-docs.tgz && tar -xzf terraform-docs.tgz && rm terraform-docs.tgz && chmod +x terraform-docs && sudo mv terraform-docs /usr/bin/
+curl -L "$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.zip")" > tflint.zip && unzip tflint.zip && rm tflint.zip && sudo mv tflint /usr/bin/
+curl -L "$(curl -s https://api.github.com/repos/aquasecurity/tfsec/releases/latest | grep -o -E -m 1 "https://.+?tfsec-linux-amd64")" > tfsec && chmod +x tfsec && sudo mv tfsec /usr/bin/
+curl -L "$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest | grep -o -E -m 1 "https://.+?_Linux_x86_64.tar.gz")" > terrascan.tar.gz && tar -xzf terrascan.tar.gz terrascan && rm terrascan.tar.gz && sudo mv terrascan /usr/bin/ && terrascan init
+sudo apt install -y jq && \
+curl -L "$(curl -s https://api.github.com/repos/infracost/infracost/releases/latest | grep -o -E -m 1 "https://.+?-linux-amd64.tar.gz")" > infracost.tgz && tar -xzf infracost.tgz && rm infracost.tgz && sudo mv infracost-linux-amd64 /usr/bin/infracost && infracost register
+curl -L "$(curl -s https://api.github.com/repos/minamijoyo/tfupdate/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.tar.gz")" > tfupdate.tar.gz && tar -xzf tfupdate.tar.gz tfupdate && rm tfupdate.tar.gz && sudo mv tfupdate /usr/bin/
+curl -L "$(curl -s https://api.github.com/repos/minamijoyo/hcledit/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.tar.gz")" > hcledit.tar.gz && tar -xzf hcledit.tar.gz hcledit && rm hcledit.tar.gz && sudo mv hcledit /usr/bin/
+```
 
-    Add the comment blocks where you want to auto-generate the different sections of terraform module. If required, we can keep a footer message that will not be changed.
-
-# TF code base## Introduction
-This is sample readme for terraform module
-<!-- BEGIN_AUTOMATED_TF_DOCS_BLOCK -->
-<!-- END_AUTOMATED_TF_DOCS_BLOCK -->
+</details>
 
 
-3. Now we are ready to auto generate the documentation!
+<details><summary><b>Ubuntu 20.04</b></summary><br>
 
-`terraform-docs -c .terraform-docs.yml ./tf-code/`
+```bash
+sudo apt update
+sudo apt install -y unzip software-properties-common python3 python3-pip
+python3 -m pip install --upgrade pip
+pip3 install --no-cache-dir pre-commit
+pip3 install --no-cache-dir checkov
+curl -L "$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest | grep -o -E -m 1 "https://.+?-linux-amd64.tar.gz")" > terraform-docs.tgz && tar -xzf terraform-docs.tgz terraform-docs && rm terraform-docs.tgz && chmod +x terraform-docs && sudo mv terraform-docs /usr/bin/
+curl -L "$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest | grep -o -E -m 1 "https://.+?_Linux_x86_64.tar.gz")" > terrascan.tar.gz && tar -xzf terrascan.tar.gz terrascan && rm terrascan.tar.gz && sudo mv terrascan /usr/bin/ && terrascan init
+curl -L "$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.zip")" > tflint.zip && unzip tflint.zip && rm tflint.zip && sudo mv tflint /usr/bin/
+curl -L "$(curl -s https://api.github.com/repos/aquasecurity/tfsec/releases/latest | grep -o -E -m 1 "https://.+?tfsec-linux-amd64")" > tfsec && chmod +x tfsec && sudo mv tfsec /usr/bin/
+sudo apt install -y jq && \
+curl -L "$(curl -s https://api.github.com/repos/infracost/infracost/releases/latest | grep -o -E -m 1 "https://.+?-linux-amd64.tar.gz")" > infracost.tgz && tar -xzf infracost.tgz && rm infracost.tgz && sudo mv infracost-linux-amd64 /usr/bin/infracost && infracost register
+curl -L "$(curl -s https://api.github.com/repos/minamijoyo/tfupdate/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.tar.gz")" > tfupdate.tar.gz && tar -xzf tfupdate.tar.gz tfupdate && rm tfupdate.tar.gz && sudo mv tfupdate /usr/bin/
+curl -L "$(curl -s https://api.github.com/repos/minamijoyo/hcledit/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.tar.gz")" > hcledit.tar.gz && tar -xzf hcledit.tar.gz hcledit && rm hcledit.tar.gz && sudo mv hcledit /usr/bin/
+```
 
-After the execution observe the README.md file updated in the given tf-code directory.
-## Contributing
+</details>
 
-Contributions are welcome! Please Create [CONTRIBUTING.md](CONTRIBUTING.md) for more information about the contribution in the project
+<details><summary><b>Windows 10/11</b></summary>
 
+We highly recommend using [WSL/WSL2](https://docs.microsoft.com/en-us/windows/wsl/install) with Ubuntu and following the Ubuntu installation guide. Or use Docker.
+
+> **Note**: We won't be able to help with issues that can't be reproduced in Linux/Mac.
+> So, try to find a working solution and send PR before open an issue.
+
+Otherwise, you can follow [this gist](https://gist.github.com/etiennejeanneaurevolve/1ed387dc73c5d4cb53ab313049587d09):
+
+1. Install [`git`](https://git-scm.com/downloads) and [`gitbash`](https://gitforwindows.org/)
+2. Install [Python 3](https://www.python.org/downloads/)
+3. Install all prerequisites needed (see above)
+
+Ensure your PATH environment variable looks for `bash.exe` in `C:\Program Files\Git\bin` (the one present in `C:\Windows\System32\bash.exe` does not work with `pre-commit.exe`)
+
+For `checkov`, you may need to also set your `PYTHONPATH` environment variable with the path to your Python modules.  
+E.g. `C:\Users\USERNAME\AppData\Local\Programs\Python\Python39\Lib\site-packages`
+
+</details>
+
+<!-- markdownlint-enable no-inline-html -->
+
+### 2. Install the pre-commit hook globally
+
+> **Note**: not needed if you use the Docker image
+
+```bash
+DIR=~/.git-template
+git config --global init.templateDir ${DIR}
+pre-commit init-templatedir -t pre-commit ${DIR}
+```
+
+### 3. Add configs and hooks
+
+Step into the repository you want to have the pre-commit hooks installed and run:
+
+```bash
+git init
+cat <<EOF > .pre-commit-config.yaml
+repos:
+- repo: https://github.com/antonbabenko/pre-commit-terraform
+  rev: <VERSION> # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
+  hooks:
+    - id: terraform_fmt
+    - id: terraform_docs
+EOF
+```
+
+### 4. Run
+
+Execute this command to run `pre-commit` on all files in the repository (not only changed files):
+
+```bash
+pre-commit run -a
+```
+
+Or, using Docker ([available tags](https://github.com/antonbabenko/pre-commit-terraform/pkgs/container/pre-commit-terraform/versions)):
+
+> **Note**: This command uses your user id and group id for the docker container to use to access the local files.  If the files are owned by another user, update the `USERID` environment variable.  See [File Permissions section](#file-permissions) for more information.
+
+```bash
+TAG=latest
+docker run -e "USERID=$(id -u):$(id -g)" -v $(pwd):/lint -w /lint ghcr.io/antonbabenko/pre-commit-terraform:$TAG run -a
+```
+
+Execute this command to list the versions of the tools in Docker:
+
+```bash
+TAG=latest
+docker run --rm --entrypoint cat ghcr.io/antonbabenko/pre-commit-terraform:$TAG /usr/bin/tools_versions_info
+```
+
+## Available Hooks
+
+There are several [pre-commit](https://pre-commit.com/) hooks to keep Terraform configurations (both `*.tf` and `*.tfvars`) and Terragrunt configurations (`*.hcl`) in a good shape:
+
+<!-- markdownlint-disable no-inline-html -->
+| Hook name                                              | Description                                                                                                                                                                                                                                  | Dependencies<br><sup>[Install instructions here](#1-install-dependencies)</sup>      |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `checkov` and `terraform_checkov`                      | [checkov](https://github.com/bridgecrewio/checkov) static analysis of terraform templates to spot potential security issues. [Hook notes](#checkov-deprecated-and-terraform_checkov)                                                         | `checkov`<br>Ubuntu deps: `python3`, `python3-pip`                                   |
+| `infracost_breakdown`                                  | Check how much your infra costs with [infracost](https://github.com/infracost/infracost). [Hook notes](#infracost_breakdown)                                                                                                                 | `infracost`, `jq`, [Infracost API key](https://www.infracost.io/docs/#2-get-api-key) |
+| `terraform_docs`                                       | Inserts input and output documentation into `README.md`. Recommended. [Hook notes](#terraform_docs)                                                                                                                                          | `terraform-docs`                                                                     |
+| `terraform_docs_replace`                               | Runs `terraform-docs` and pipes the output directly to README.md. **DEPRECATED**, see [#248](https://github.com/antonbabenko/pre-commit-terraform/issues/248). [Hook notes](#terraform_docs_replace-deprecated)                              | `python3`, `terraform-docs`                                                          |
+| `terraform_docs_without_`<br>`aggregate_type_defaults` | Inserts input and output documentation into `README.md` without aggregate type defaults. Hook notes same as for [terraform_docs](#terraform_docs)                                                                                            | `terraform-docs`                                                                     |
+| `terraform_fmt`                                        | Reformat all Terraform configuration files to a canonical format. [Hook notes](#terraform_fmt)                                                                                                                                               | -                                                                                    |
+| `terraform_providers_lock`                             | Updates provider signatures in [dependency lock files](https://www.terraform.io/docs/cli/commands/providers/lock.html). [Hook notes](#terraform_providers_lock)                                                                              | -                                                                                    |
+| `terraform_tflint`                                     | Validates all Terraform configuration files with [TFLint](https://github.com/terraform-linters/tflint). [Available TFLint rules](https://github.com/terraform-linters/tflint/tree/master/docs/rules#rules). [Hook notes](#terraform_tflint). | `tflint`                                                                             |
+| `terraform_tfsec`                                      | [TFSec](https://github.com/aquasecurity/tfsec) static analysis of terraform templates to spot potential security issues. [Hook notes](#terraform_tfsec)                                                                                      | `tfsec`                                                                              |
+| `terraform_validate`                                   | Validates all Terraform configuration files. [Hook notes](#terraform_validate)                                                                                                                                                               | `jq`, only for `--retry-once-with-cleanup` flag                                      |
+| `terragrunt_fmt`                                       | Reformat all [Terragrunt](https://github.com/gruntwork-io/terragrunt) configuration files (`*.hcl`) to a canonical format.                                                                                                                   | `terragrunt`                                                                         |
+| `terragrunt_validate`                                  | Validates all [Terragrunt](https://github.com/gruntwork-io/terragrunt) configuration files (`*.hcl`)                                                                                                                                         | `terragrunt`                                                                         |
+| `terraform_wrapper_module_for_each`                    | Generates Terraform wrappers with `for_each` in module. [Hook notes](#terraform_wrapper_module_for_each)                                                                                                                                     | `hcledit`                                                                            |
+| `terrascan`                                            | [terrascan](https://github.com/tenable/terrascan) Detect compliance and security violations. [Hook notes](#terrascan)                                                                                                                        | `terrascan`                                                                          |
+| `tfupdate`                                             | [tfupdate](https://github.com/minamijoyo/tfupdate) Update version constraints of Terraform core, providers, and modules. [Hook notes](#tfupdate)                                                                                             | `tfupdate`                                                                           |
+<!-- markdownlint-enable no-inline-html -->
+
+Check the [source file](https://github.com/antonbabenko/pre-commit-terraform/blob/master/.pre-commit-hooks.yaml) to know arguments used for each hook.
+
+## Hooks usage notes and examples
+
+### All hooks: Usage of environment variables in `--args`
+
+> All, except deprecated hooks: `checkov`, `terraform_docs_replace`
+
+You can use environment variables for the `--args` section.
+
+> **Warning**: You _must_ use the `${ENV_VAR}` definition, `$ENV_VAR` will not expand.
+
+Config example:
+
+```yaml
+- id: terraform_tflint
+  args:
+  - --args=--config=${CONFIG_NAME}.${CONFIG_EXT}
+  - --args=--module
+```
+
+If for config above set up `export CONFIG_NAME=.tflint; export CONFIG_EXT=hcl` before `pre-commit run`, args will be expanded to `--config=.tflint.hcl --module`.
+
+### All hooks: Set env vars inside hook at runtime
+
+> All, except deprecated hooks: `checkov`, `terraform_docs_replace`
+
+You can specify environment variables that will be passed to the hook at runtime.
+
+Config example:
+
+```yaml
+- id: terraform_validate
+  args:
+    - --env-vars=AWS_DEFAULT_REGION="us-west-2"
+    - --env-vars=AWS_ACCESS_KEY_ID="anaccesskey"
+    - --env-vars=AWS_SECRET_ACCESS_KEY="asecretkey"
+```
+
+### All hooks: Disable color output
+
+> All, except deprecated hooks: `checkov`, `terraform_docs_replace`
+
+To disable color output for all hooks, set `PRE_COMMIT_COLOR=never` var. Eg:
+
+```bash
+PRE_COMMIT_COLOR=never pre-commit run
+```
