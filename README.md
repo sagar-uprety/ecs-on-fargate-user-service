@@ -30,6 +30,3 @@ Terraform default template module is a useful starting point for those who frequ
 
 Contributions are welcome! Please Create [CONTRIBUTING.md](CONTRIBUTING.md) for more information about the contribution in the project
 
-## License
-
-This project is licensed under the [LICENSE NAME HERE] License - Create the [LICENSE.md](LICENSE.md) file for details.
