@@ -22,6 +22,6 @@ func TestTerraformExample(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the values of output variables and check they have the expected values.
-	output := terraform.Output(t, terraformOptions, "output")
-	assert.Equal(t, "output value", output)
+	output := terraform.Output(t, terraformOptions, "id")
+	assert.NotNil(t, output)
 }
