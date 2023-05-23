@@ -535,22 +535,17 @@ Unlike most other hooks, this hook triggers once if there are any changed files 
 TEST: `/test/sample_test.go`
 This code defines a test function to test a Terraform module using the Terratest library. The test function first constructs the Terraform options with default retryable errors to handle the most common retryable errors in Terraform testing. Then it sets the path to the Terraform code that will be tested by setting TerraformDir in the options. Next, it cleans up resources with "terraform destroy" at the end of the test by calling terraform.Destroy(). After that, it runs terraform init and terraform apply by calling terraform.InitAndApply() and fails the test if there are any errors. Finally, it runs terraform output to get the values of output variables and check they have the expected values by calling terraform.Output() and assert.Equal(), respectively.
 
-
-
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.0 |
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 4.0 |
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| <a name="provider_null"></a> [null](#provider\_null) | n/a |
+No providers.
 
 ## Modules
 
@@ -558,9 +553,7 @@ No modules.
 
 ## Resources
 
-| Name | Type |
-|------|------|
-| [null_resource.example](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
+No resources.
 
 ## Inputs
 
