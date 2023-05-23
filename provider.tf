@@ -3,13 +3,13 @@
 ################################################################################
 
 provider "aws" {
-  region  = var.region
+  region = var.region
   # Default tags (Global tags) applies to all resources created by this provider
   default_tags {
     tags = {
-	  Owner               = "adex"
-      Environment         = "dev"	
-      Project             = "aws-vpc"
+      Owner       = "${var.owner}"
+      Environment = "${var.environment}"
+      Project     = "${var.project}"
     }
   }
 }
