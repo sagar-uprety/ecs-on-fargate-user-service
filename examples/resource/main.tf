@@ -1,4 +1,14 @@
-resource "null_resource" "example" {
-  # This resource does not do anything, but can be used to trigger
-  # provisioners or other side-effects
+terraform {
+  required_providers {
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 4.0"
+    }
+  }
 }
+
+resource "null_resource" "example" {
+  # Your resource configuration goes here
+}
+
+

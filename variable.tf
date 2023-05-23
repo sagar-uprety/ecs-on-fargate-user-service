@@ -1,6 +1,7 @@
 ################################################################################
 # Input variables for the main.tf file
 ################################################################################
+
 variable "environment" {
   description = "Working application environment eg: dev, stg, prd"
   type        = string
