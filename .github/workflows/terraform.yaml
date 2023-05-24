@@ -49,6 +49,12 @@ jobs:
       - name: Terraform Validate
         run: terraform validate -no-color
 
+      - name: Clone repo
+        uses: actions/checkout@master
+        
+      - name: tfsec
+        uses: aquasecurity/tfsec-action@v1.0.0
+
       # - name: Terraform Tfsec
       #   uses: liamg/tfsec-action@v0.1
 
