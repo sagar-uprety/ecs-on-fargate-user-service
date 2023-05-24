@@ -121,9 +121,16 @@ jobs:
             ${{ steps.plan.outputs.stderr }}
             ```
       
-      # - name: Stop pipeline if failed
-      #   if: steps.plan.outcome == 'failure'
-      #   run: exit 1
+      - name: Stop pipeline if failed
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+      
+      - name: Terraform Apply
+        if: github.event_name == 'push'
+        id: apply
+        run: |
+          cd ${{ env.terraformWorkDir }}
+          terraform apply -auto-approve  -no-color
 
       - name: Post Apply to GitHub PR
         if: steps.apply.outcome == 'success'
@@ -152,6 +159,9 @@ jobs:
             ```
             ${{ steps.apply.outputs.stderr }}
             ```
+      - name: Stop pipeline if failed
+        if: steps.apply.outcome == 'failure'
+        run: exit 1
 
 
       
