@@ -32,16 +32,5 @@ jobs:
       - name: Terraform init
         run: terraform init
       
-      - name: antonbabenko/pre-commit-terraform
-        uses: antonbabenko/pre-commit-terraform@v1.79.1
-        with:
-          hooks: terraform_fmt, terraform_tflint, terraform_validate, terraform_providers_lock, checkov, terrascan, terraform_tfsec
-      
       - name: Terraform show
         run: terraform show -no-color 
-
-      - name: Install infracost
-        run:  curl -fsSL https://raw.githubusercontent.com/infracost/infracost/master/scripts/install.sh | sh
-
-      - name: Terraform infracost
-        run: infracost breakdown --path=.

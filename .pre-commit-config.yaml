@@ -14,8 +14,8 @@ repos:
       - id: terraform_tfsec
       - id: terraform_validate
       - id: terraform_tflint
-      - id: terrascan
       - id: infracost_breakdown
         args:
-         - --args=--path=./env/dev
+         - --args=--path=.
         verbose: true
+      - id: terrascan
