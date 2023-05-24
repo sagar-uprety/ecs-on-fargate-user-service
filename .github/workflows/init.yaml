@@ -31,6 +31,3 @@ jobs:
 
       - name: Terraform init
         run: terraform init
-      
-      - name: Terraform show
-        run: terraform show -no-color 

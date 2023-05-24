@@ -7,9 +7,10 @@ on:
   pull_request:
     branches:
       - main
+      - DEVOPS-6-FIXES
 env:
   terraformVersion: 1.3.6
-  terraformWorkDir: ./terraform
+  terraformWorkDir: ./
   terraformModulesGithubOrg: terraform-aws-module-template
   awsRegion: us-east-1
 
@@ -18,9 +19,30 @@ jobs:
     name: Plan
     runs-on: ubuntu-20.04
     steps: 
-      - name: Terraform infracost
-        run: infracost breakdown --path=.
+      - name: Terraform Plans
+        id: plan
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          cd ${{ env.terraformWorkDir }}
+          terraform plan -no-color -out tf.plan
+
+      - name: Upload Terraform Plan File
+        if: steps.plan.outcome == 'success' && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: tf.plan
+          path: ${{ env.terraformWorkDir }}/tf.plan
+          retention-days: 3
       
+      - name: Terraform Show
+        if: steps.plan.outcome == 'success' && github.event_name == 'pull_request'
+        id: show
+        run: |-
+          echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' | tail -c 35000 \
+          | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > /tmp/plan.txt
+          PLAN=$(cat /tmp/plan.txt)
+
       - name: Post Plan to GitHub PR
         if: steps.plan.outcome == 'success' && github.event_name == 'pull_request'
         uses: mshick/add-pr-comment@v2
