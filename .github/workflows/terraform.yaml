@@ -1,6 +1,6 @@
 ---
 # .github/workflows/terraform.yaml
-name: Terraform - init||Plan||Apply
+name: Terraform - Plan||Apply
 run-name: '[${{ github.event_name }} - ${{ github.ref_name }}] Terraform executed by @${{ github.actor }}'
 
 on:

@@ -6,7 +6,7 @@ run-name: '[${{ github.event_name }} - ${{ github.ref_name }}] Terraform execute
 on:
   pull_request:
     branches:
-      # - DEVOPS-6_FIXES
+      - DEVOPS-6-FIXES
       - main
 
 
