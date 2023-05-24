@@ -35,10 +35,6 @@ jobs:
       - name: Terraform Format
         run: terraform fmt --check
 
-      - name: Checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-         args: -d .
       
       - name: Terraform Initialize
         id: init
@@ -46,34 +42,25 @@ jobs:
           cd ${{ env.terraformWorkDir }}
           terraform init
       
+      - name: Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+         args: -d .
+         
       - name: Terraform Validate
         run: terraform validate -no-color
 
-      # - name: Clone repo
-      #   uses: actions/checkout@master
-
-      - name: tfsec
+      - name:  Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
 
-      - name: Run infracost diff
+      - name: Run infracost-breakdown
         uses: infracost/infracost-gh-action@master 
         env:
           INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
           path: ./
-
-      # - name: Terraform Tfsec
-      #   uses: liamg/tfsec-action@v0.1
-
-
-      # - name: Infracost breakdown
-      #   uses: infracost/infracost-action@v1.4.2
-      #   with:
-      #     args: "--path=."
-      #     api_key: "${{ secrets.INFRACOST_API_KEY }}"
       
-
   plan_or_apply:
     name: Terraform Plan|Apply
     needs: lint

@@ -12,10 +12,10 @@ repos:
       - id: terraform_providers_lock
       - id: checkov
       - id: terraform_tfsec
+      - id: terraform init
       - id: terraform_validate
       - id: terraform_tflint
       - id: infracost_breakdown
         args:
          - --args=--path=.
         verbose: true
-      - id: terrascan
