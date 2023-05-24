@@ -33,7 +33,7 @@ jobs:
         run: terraform init
       
       - name: antonbabenko/pre-commit-terraform
-        uses: antonbabenko/pre-commit-terraform@v1
+        uses: antonbabenko/pre-commit-terraform@v1.79.1
         with:
           hooks: terraform_fmt, terraform_tflint, terraform_validate, terraform_providers_lock, checkov, terrascan, terraform_tfsec
       
