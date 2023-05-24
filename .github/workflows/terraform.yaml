@@ -40,6 +40,12 @@ jobs:
         with:
          args: -d .
       
+      - name: Terraform Initialize
+        id: init
+        run: |
+          cd ${{ env.terraformWorkDir }}
+          terraform init
+      
       - name: Terraform Validate
         run: terraform validate -no-color
 
