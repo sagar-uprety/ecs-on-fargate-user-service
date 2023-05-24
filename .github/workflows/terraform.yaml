@@ -1,6 +1,6 @@
 ---
 # .github/workflows/terraform.yaml
-name: Terraform - Plan||Apply
+name: Terraform - init||Plan||Apply
 run-name: '[${{ github.event_name }} - ${{ github.ref_name }}] Terraform executed by @${{ github.actor }}'
 
 on:
@@ -15,28 +15,9 @@ env:
 
 jobs:
   lint:
-    name: Lint
+    name: Plan
     runs-on: ubuntu-20.04
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: ${{ env.terraformVersion }}
-
-      - name: Terraform init
-        run: terraform init
-      
-      - name: antonbabenko/pre-commit-terraform
-        uses: antonbabenko/pre-commit-terraform@v1.74.1
-        with:
-          hooks: terraform_fmt, terraform_tflint, terraform_validate, terraform_providers_lock, checkov, terrascan, terraform_tfsec, infracost_breakdown, terraform_wrapper_module_for_each
-      
-      - name: Terraform show
-        run: terraform show -no-color
-      
+    steps: 
       - name: Terraform infracost
         run: infracost breakdown --path=.
       
