@@ -31,6 +31,11 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ env.terraformVersion }}
+          
+      - name: Terraform Format
+        run: terraform fmt --check
+
+      
 
   plan_or_apply:
     name: Terraform Plan|Apply
@@ -57,7 +62,7 @@ jobs:
         run: |
           cd ${{ env.terraformWorkDir }}
           terraform init
-          
+
       - name: Terraform Plans
         id: plan
         if: github.event_name == 'pull_request'
@@ -88,7 +93,6 @@ jobs:
         with:
           allow-repeats: true
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          repo-token-user-login: github-actions[bot]
           message: |
             ## Terraform Plan
             ### Environment: ${{ github.base_ref }}
@@ -106,7 +110,6 @@ jobs:
         uses: mshick/add-pr-comment@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          repo-token-user-login: github-actions[bot]
           message: |
             ## Terraform Plan
             ### Environment: ${{ github.base_ref }}
