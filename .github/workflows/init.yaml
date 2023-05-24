@@ -41,7 +41,7 @@ jobs:
         run: terraform show -no-color 
 
       - name: Install infracost
-        run: sudo apt install infracost
-      
+        run:  curl -fsSL https://raw.githubusercontent.com/infracost/infracost/master/scripts/install.sh | sh
+        
       - name: Terraform infracost
         run: infracost breakdown --path=.
