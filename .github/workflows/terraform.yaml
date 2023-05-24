@@ -4,6 +4,11 @@ name: Terraform - Plan||Apply
 run-name: '[${{ github.event_name }} - ${{ github.ref_name }}] Terraform executed by @${{ github.actor }}'
 
 on:
+  push:
+    branches:
+      - main
+      - DEVOPS-6-FIXES
+
   pull_request:
     branches:
       - main
@@ -16,9 +21,37 @@ env:
 
 jobs:
   lint:
-    name: Plan
+    name: Lint
     runs-on: ubuntu-20.04
-    steps: 
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.terraformVersion }}
+
+  plan_or_apply:
+    name: Terraform Plan|Apply
+    needs: lint
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+      
+      - name: Setup git repo credentials for terraform modules
+        run: |
+          git config --global \
+          url."https://git:${{ env.githubToken }}@github.com/${{ env.terraformModulesGithubOrg }}".insteadOf \
+          "https://github.com/${{ env.terraformModulesGithubOrg }}"
+        shell: sh
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.terraformVersion }}
+
       - name: Terraform Plans
         id: plan
         if: github.event_name == 'pull_request'
@@ -82,12 +115,6 @@ jobs:
       - name: Stop pipeline if failed
         if: steps.plan.outcome == 'failure'
         run: exit 1
-
-  plan_or_apply:
-    name: Terraform Plan|Apply
-    needs: lint
-    runs-on: ubuntu-20.04
-    steps:
       - name: Post Apply to GitHub PR
         if: steps.apply.outcome == 'success'
         uses: mshick/add-pr-comment@v1
