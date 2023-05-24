@@ -49,11 +49,19 @@ jobs:
       - name: Terraform Validate
         run: terraform validate -no-color
 
-      - name: Clone repo
-        uses: actions/checkout@master
-        
+      # - name: Clone repo
+      #   uses: actions/checkout@master
+
       - name: tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
+
+      - name: Run infracost diff
+        uses: infracost/infracost-gh-action@master 
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        with:
+          path: ./
 
       # - name: Terraform Tfsec
       #   uses: liamg/tfsec-action@v0.1
