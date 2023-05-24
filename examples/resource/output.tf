@@ -1,3 +1,3 @@
- output "id" {
-  value       = null_resource.example.id
+output "id" {
+  value = null_resource.example.id
 }

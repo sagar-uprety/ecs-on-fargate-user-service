@@ -1,5 +1,5 @@
-
 terraform {
+  required_version = ">= 0.12"
   required_providers {
     null = {
       source  = "hashicorp/null"
@@ -12,6 +12,6 @@ provider "null" {
   # Configuration options
 }
 
-resource "null_resource" "example"{
+resource "null_resource" "example" {
 }
 

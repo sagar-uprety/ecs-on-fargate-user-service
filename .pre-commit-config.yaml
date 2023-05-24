@@ -12,6 +12,6 @@ repos:
       - id: terraform_providers_lock
       - id: checkov
       - id: terraform_tfsec
-      - id: terraform_tflint
       - id: terraform_validate
+      - id: terraform_tflint
       - id: terrascan

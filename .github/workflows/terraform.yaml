@@ -84,6 +84,34 @@ jobs:
     name: Terraform Plan|Apply
     needs: lint
     runs-on: ubuntu-20.04
+    steps:
+      - name: Post Apply to GitHub PR
+        if: steps.apply.outcome == 'success'
+        uses: mshick/add-pr-comment@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token-user-login: github-actions[bot]
+          message: |
+            ## Terraform Apply
+            ### Environment: ${{ github.ref_name }}
+            ### Region: us-east-1
+            ```
+            ${{ steps.apply.outputs.stdout }}
+            ```
+
+      - name: Post Apply Failure
+        if: steps.apply.outcome == 'failure'
+        uses: mshick/add-pr-comment@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token-user-login: github-actions[bot]
+          message: |-
+            ## Terraform Apply
+            ### Environment: ${{ github.ref_name }}
+            ### Region: us-east-1
+            ```
+            ${{ steps.apply.outputs.stderr }}
+            ```
 
 
       
