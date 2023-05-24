@@ -35,6 +35,23 @@ jobs:
       - name: Terraform Format
         run: terraform fmt --check
 
+      - name: Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+         args: -d .
+
+      - name: Terraform Tfsec
+        uses: liamg/tfsec-action@v0.1
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Infracost breakdown
+        uses: infracost/infracost-action@v1.4.2
+        with:
+          args: "--path=."
+        env:
+          api_key: "${{ secrets.INFRACOST_API_KEY }}"
       
 
   plan_or_apply:
