@@ -52,6 +52,12 @@ jobs:
         with:
           terraform_version: ${{ env.terraformVersion }}
 
+      - name: Terraform Initialize
+        id: init
+        run: |
+          cd ${{ env.terraformWorkDir }}
+          terraform init
+          
       - name: Terraform Plans
         id: plan
         if: github.event_name == 'pull_request'
