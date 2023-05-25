@@ -61,18 +61,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
           path: ./
-      
-      - name: Setup git repo credentials for terraform modules
-        run: |
-          git config --global \
-          url."https://git:${{ env.githubToken }}@github.com/${{ env.terraformModulesGithubOrg }}".insteadOf \
-          "https://github.com/${{ env.terraformModulesGithubOrg }}"
-        shell: sh
+
+      - name: Upload  infracost-breakdown File
+        if: steps. infracost-breakdown.outcome == 'success' && github.event_name == 'push'
+        uses: actions/upload-artifact@v3
+        with:
+          name: infracost.json
+          path: ${{ env.terraformWorkDir }}/.infracost/infracost.json
+          retention-days: 3
 
       - name: Infracost Comment
         uses: infracost/infracost-gh-action@master
         with:
-          path: ./
+          path: ${{ env.terraformWorkDir }}/.infracost/infracost.json
           repo: ${{ github.event.repository.full_name }}
           pull_request: ${{ github.event.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
