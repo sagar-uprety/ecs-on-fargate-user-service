@@ -62,12 +62,12 @@ jobs:
         with:
           path: ./
       
-      # - name: Setup git repo credentials for terraform modules
-      #   run: |
-      #     git config --global \
-      #     url."https://git:${{ env.githubToken }}@github.com/${{ env.terraformModulesGithubOrg }}".insteadOf \
-      #     "https://github.com/${{ env.terraformModulesGithubOrg }}"
-      #   shell: sh
+      - name: Setup git repo credentials for terraform modules
+        run: |
+          git config --global \
+          url."https://git:${{ env.githubToken }}@github.com/${{ env.terraformModulesGithubOrg }}".insteadOf \
+          "https://github.com/${{ env.terraformModulesGithubOrg }}"
+        shell: sh
 
       - name: Infracost Comment
         uses: infracost/infracost-gh-action@master
