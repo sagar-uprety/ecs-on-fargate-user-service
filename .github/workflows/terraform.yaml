@@ -67,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: infracost.json
-          path: ${{ env.terraformWorkDir }}/.infracost/infracost.json
+          path: ${{ env.terraformWorkDir }}/.infracost/terraform_modules/manifest.json
           retention-days: 3
 
       - name: Infracost Comment
