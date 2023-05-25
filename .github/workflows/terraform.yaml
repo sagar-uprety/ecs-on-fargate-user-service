@@ -54,12 +54,30 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.0
 
       - name: Run infracost-breakdown
+        id: infracost-breakdown
         uses: infracost/infracost-gh-action@master 
         env:
           INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
           path: ./
+      
+      # - name: Setup git repo credentials for terraform modules
+      #   run: |
+      #     git config --global \
+      #     url."https://git:${{ env.githubToken }}@github.com/${{ env.terraformModulesGithubOrg }}".insteadOf \
+      #     "https://github.com/${{ env.terraformModulesGithubOrg }}"
+      #   shell: sh
+
+      - name: Infracost Comment
+        uses: infracost/infracost-gh-action@master
+        with:
+          path: ./
+          repo: ${{ github.event.repository.full_name }}
+          pull_request: ${{ github.event.number }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          behavior: update
+      
       
   plan_or_apply:
     name: Terraform Plan|Apply
