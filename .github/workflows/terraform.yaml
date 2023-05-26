@@ -53,31 +53,39 @@ jobs:
       - name:  Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
 
-      - name: Run infracost-breakdown
-        id: infracost-breakdown
-        uses: infracost/infracost-gh-action@master 
-        env:
-          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v2
         with:
-          path: ./
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
 
-      - name: Upload  infracost-breakdown File
-        if: steps. infracost-breakdown.outcome == 'success' && github.event_name == 'push'
-        uses: actions/upload-artifact@v3
+      - name: Checkout base branch
+        uses: actions/checkout@v2
         with:
-          name: infracost.json
-          path: ${{ env.terraformWorkDir }}/.infracost/terraform_modules/manifest.json
-          retention-days: 3
+          ref: '${{ github.event.pull_request.base.ref }}'  
 
-      - name: Infracost Comment
-        uses: infracost/infracost-gh-action@master
-        with:
-          path: ${{ env.terraformWorkDir }}/.infracost/infracost.json
-          repo: ${{ github.event.repository.full_name }}
-          pull_request: ${{ github.event.number }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          behavior: update
+      - name: Generate Infracost cost estimate baseline
+        run: |
+          infracost breakdown --path=.  \
+                        --format=json \
+                        --out-file=/tmp/infracost-base.json
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+
+      - name: Generate Infracost diff
+        run: |
+          infracost diff --path=${env. terraformWorkDir} \
+                          --format=json \
+                          --compare-to=/tmp/infracost-base.json \
+                          --out-file=/tmp/infracost.json
+
+      - name: Post Infracost comment
+        run: |
+            infracost comment github --path=/tmp/infracost.json \
+                                     --repo=$GITHUB_REPOSITORY \
+                                     --github-token=${{github.token}} \
+                                     --pull-request=${{github.event.pull_request.number}} \
+                                     --behavior=update
       
       
   plan_or_apply:
