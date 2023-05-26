@@ -81,12 +81,12 @@ jobs:
                           --out-file=/tmp/infracost.json
 
       - name: Post Infracost comment
-        if: github.event_name == 'pull_request' && steps.infracost-diff.outcome == 'success'
+        if: github.event_name == 'push' && steps.infracost-diff.outcome == 'success'
         run: |
             infracost comment github --path=/tmp/infracost.json \
                                      --repo=$GITHUB_REPOSITORY  \
                                      --github-token= $GITHUB_TOKEN \
-                                     --pull-request=${{github.event.pull_request.number}} \
+                                     --pull-request=${{github.event.push.number}} \
                                      --behavior=update
       
       
