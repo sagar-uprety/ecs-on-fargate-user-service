@@ -83,13 +83,13 @@ jobs:
       - name: Post Infracost comment
         if: steps.infracost-diff.outcome == 'success'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BASE_GITHUB_TOKEN }}
         run: |
           infracost comment github \
             --path=/tmp/infracost.json \
-           --pull-request=3 \
+           --pull-request= ${{ github.event.number }} \
             --repo=${{ github.repository }} \
-            --github-token= ${{ GITHUB_TOKEN }}
+            --github-token= ${{ env.GITHUB_TOKEN }}
             --behavior=update
 
       
