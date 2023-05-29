@@ -13,6 +13,11 @@ on:
     branches:
       - main
       - DEVOPS-6-FIXES
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  
 env:
   terraformVersion: 1.3.6
   terraformWorkDir: .
