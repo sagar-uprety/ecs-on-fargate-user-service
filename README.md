@@ -2,7 +2,6 @@
 
 Terraform default template module is a useful starting point for those who frequently use Terraform for their projects. Its pre-written required files and format of code saves time and effort and provides a consistent structure for all Terraform projects.
 
-
 ## Prerequisites
 
 - Terraform version: `x.x.x`
@@ -20,7 +19,7 @@ Terraform default template module is a useful starting point for those who frequ
 
 - `main.tf`:  This file is executed by Terraform to create, modify, or destroy the resources defined in it.
 - `variables.tf`: Variables can be used for a variety of purposes such as storing sensitive information, providing inputs to resources, or defining defaults for a module.
-- `versions.tf`: The versions.tf file in Terraform is used to set constraints on the Terraform version required for working with the configuration files. 
+- `versions.tf`: The versions.tf file in Terraform is used to set constraints on the Terraform version required for working with the configuration files.
 - `provider.tf`: The provider blocks in Terraform configuration files represent the cloud infrastructure or services that be managed by Terraform. Providers allow Terraform to deploy and manage resources in different cloud environments such as AWS, Azure, Google Cloud Platform, and more.
 - `outputs.tf`: Description of what this file does.
 - `.gitignore`: List of files to ignore in version control.
@@ -58,7 +57,7 @@ All available tags [here](https://github.com/antonbabenko/pre-commit-terraform/p
 
 **Build from scratch**:
 
-> **Note**: To build image you need to have [`docker buildx`](https://docs.docker.com/build/install-buildx/) enabled as default builder.  
+> **Note**: To build image you need to have [`docker buildx`](https://docs.docker.com/build/install-buildx/) enabled as default builder.
 > Otherwise - provide `TARGETOS` and `TARGETARCH` as additional `--build-arg`'s to `docker build`.
 
 When hooks-related `--build-arg`s are not specified, only the latest version of `pre-commit` and `terraform` will be installed.
@@ -159,7 +158,7 @@ Otherwise, you can follow [this gist](https://gist.github.com/etiennejeanneaurev
 
 Ensure your PATH environment variable looks for `bash.exe` in `C:\Program Files\Git\bin` (the one present in `C:\Windows\System32\bash.exe` does not work with `pre-commit.exe`)
 
-For `checkov`, you may need to also set your `PYTHONPATH` environment variable with the path to your Python modules.  
+For `checkov`, you may need to also set your `PYTHONPATH` environment variable with the path to your Python modules.
 E.g. `C:\Users\USERNAME\AppData\Local\Programs\Python\Python39\Lib\site-packages`
 
 </details>
@@ -498,7 +497,6 @@ Unlike most other hooks, this hook triggers once if there are any changed files 
 
     if they are present in `README.md`. It is possible to pass additional arguments to shell scripts while running terraform_docs.
 
-
 2. It is possible to automatically:
     * create a documentation file
     * extend existing documentation file by appending markers to the end of the file (see item 1 above)
@@ -530,10 +528,39 @@ Unlike most other hooks, this hook triggers once if there are any changed files 
       args:
         - tfvars hcl --output-file terraform.tfvars.model.
 
-
 ## Testing is done with terratest in GOLANG
 TEST: `/test/sample_test.go`
 This code defines a test function to test a Terraform module using the Terratest library. The test function first constructs the Terraform options with default retryable errors to handle the most common retryable errors in Terraform testing. Then it sets the path to the Terraform code that will be tested by setting TerraformDir in the options. Next, it cleans up resources with "terraform destroy" at the end of the test by calling terraform.Destroy(). After that, it runs terraform init and terraform apply by calling terraform.InitAndApply() and fails the test if there are any errors. Finally, it runs terraform output to get the values of output variables and check they have the expected values by calling terraform.Output() and assert.Equal(), respectively.
+
+# Github Actions Workflow for Terraform
+
+This GitHub Actions workflow runs when changes are pushed or pulled to "main". The workflow has two jobs: `lint` and `plan_or_apply`.
+
+## Lint Job
+
+The `lint` job has several steps:
+
+1. Check out the code.
+2. Set up Terraform and run `terraform fmt --check`.
+3. Initialize Terraform, perform a security scan with Checkov, and validate Terraform configurations with `terraform validate -no-color`.
+4. Run `tfsec` for a security scan.
+5. Set up Infracost and check out the base branch.
+6. Generate an Infracost cost estimate alongside generating the Infracost diff on PR branch.
+7. Post an Infracost comment if the Infracost diff outcome is 'success' and the event is pull_request.
+
+## Plan_or_Apply Job
+
+The `plan_or_apply` job has several steps:
+
+1. Check out the code.
+2. Set up git repo credentials for Terraform modules and set up Terraform.
+3. Initialize Terraform and run `terraform plan`.
+4. If the plan is successful, upload the plan file, show the plan, and post the plan to the GitHub PR for review.
+5. If the plan fails, post the output to the GitHub PR.
+6. If the apply is successful, post the apply output to the GitHub PR.
+7. If the apply fails, post the apply output to the GitHub PR.
+
+This workflow incorporates Terraform, Checkov, tfsec, and Infracost to validate, scan, and estimate the cost of infrastructure changes before being merged.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -559,9 +586,9 @@ No resources.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_application"></a> [application](#input\_application) | Name of the application | `string` | `"adex-devops-competency"` | no |
-| <a name="input_environment"></a> [environment](#input\_environment) | Working application environment eg: dev, stg, prd | `string` | `"dev"` | no |
-| <a name="input_owner"></a> [owner](#input\_owner) | Name to be used on all the resources as identifier | `string` | `"adex"` | no |
+| <a name="input_application"></a> [application](#input\_application) | Name of the application | `string` | `""` | no |
+| <a name="input_environment"></a> [environment](#input\_environment) | Working application environment eg: dev, stg, prd | `string` | `""` | no |
+| <a name="input_owner"></a> [owner](#input\_owner) | Name to be used on all the resources as identifier | `string` | `""` | no |
 | <a name="input_region"></a> [region](#input\_region) | Region be used for all the resources | `string` | `"us-east-1"` | no |
 
 ## Outputs

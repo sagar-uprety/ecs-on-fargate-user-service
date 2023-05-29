@@ -5,19 +5,19 @@
 variable "environment" {
   description = "Working application environment eg: dev, stg, prd"
   type        = string
-  default     = "dev"
+  default     = ""
 }
 
 variable "application" {
   description = "Name of the application"
   type        = string
-  default     = "adex-devops-competency"
+  default     = ""
 }
 
 variable "owner" {
   description = "Name to be used on all the resources as identifier"
   type        = string
-  default     = "adex"
+  default     = ""
 }
 
 variable "region" {

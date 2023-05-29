@@ -7,12 +7,9 @@ on:
   push:
     branches:
       - main
-      - DEVOPS-6-FIXES
-
   pull_request:
     branches:
       - main
-      - DEVOPS-6-FIXES
 
 permissions:
   id-token: write
@@ -29,7 +26,9 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-20.04
+
     steps:
+
       - name: Check out code
         uses: actions/checkout@v3
 
@@ -37,22 +36,21 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ env.terraformVersion }}
-          
+
       - name: Terraform Format
         run: terraform fmt --check
 
-      
       - name: Terraform Initialize
         id: init
         run: |
           cd ${{ env.terraformWorkDir }}
           terraform init
-      
+
       - name: Checkov
         uses: bridgecrewio/checkov-action@master
         with:
          args: -d .
-         
+
       - name: Terraform Validate
         run: terraform validate -no-color
 
@@ -67,7 +65,7 @@ jobs:
       - name: Checkout base branch
         uses: actions/checkout@v3
         with:
-          ref: '${{ github.event.pull_request.base.ref }}'  
+          ref: '${{ github.event.pull_request.base.ref }}'
 
       - name: Generate Infracost cost estimate baseline
         run: |
@@ -95,16 +93,16 @@ jobs:
             --repo=${{ github.repository }} \
             --github-token=${{ github.token }}
 
-      
-      
   plan_or_apply:
     name: Terraform Plan|Apply
     needs: lint
     runs-on: ubuntu-20.04
+
     steps:
+
       - name: Check out code
         uses: actions/checkout@v3
-      
+
       - name: Setup git repo credentials for terraform modules
         run: |
           git config --global \
@@ -138,7 +136,7 @@ jobs:
           name: tf.plan
           path: ${{ env.terraformWorkDir }}/tf.plan
           retention-days: 3
-      
+
       - name: Terraform Show
         if: steps.plan.outcome == 'success' && github.event_name == 'pull_request'
         id: show
@@ -180,11 +178,11 @@ jobs:
             ```
             ${{ steps.plan.outputs.stderr }}
             ```
-      
+
       - name: Stop pipeline if failed
         if: steps.plan.outcome == 'failure'
         run: exit 1
-      
+
       - name: Terraform Apply
         if: github.event_name == 'push'
         id: apply
@@ -222,6 +220,3 @@ jobs:
       - name: Stop pipeline if failed
         if: steps.apply.outcome == 'failure'
         run: exit 1
-
-
-      

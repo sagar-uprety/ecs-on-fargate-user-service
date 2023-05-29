@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 0.12"
+  required_version = ">= 1.0"
   required_providers {
     null = {
       source  = "hashicorp/null"
@@ -14,4 +14,3 @@ provider "null" {
 
 resource "null_resource" "example" {
 }
-
