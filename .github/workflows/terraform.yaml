@@ -7,7 +7,7 @@ on:
   push:
     branches:
       - main
-      - DEVOPS-6-FIXES
+      # - DEVOPS-6-FIXES
 
   pull_request:
     branches:
@@ -87,7 +87,7 @@ jobs:
         run: |
           infracost comment github \
             --path=/tmp/infracost.json \
-           --pull-request= ${{ github.event.number }} \
+           --pull-request=${{ github.event.number }} \
             --repo=${{ github.repository }} \
             --github-token= ${{ env.GITHUB_TOKEN }}
             --behavior=update
