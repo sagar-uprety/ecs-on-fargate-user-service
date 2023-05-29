@@ -80,12 +80,17 @@ jobs:
                           --compare-to=/tmp/infracost-base.json \
                           --out-file=/tmp/infracost.json
 
-      - name: Post Infracost diff as comment on the PR
-        uses: infracost/infracost-action@v1.3.0
-        with:
-          cmd: comment github
-          args: --path=/tmp/infracost.json --repo=${{ github.repository }} --github-token=${{ secrets.GITHUB_TOKEN }} --behavior=update --pull-request=${{ github.event.pull_request.number }}
-
+      - name: Post Infracost comment
+        if: steps.infracost-diff.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          infracost comment github \
+            --path=/tmp/infracost.json \
+           --pull-request=3 \
+            --repo=${{ github.repository }} \
+            --github-token= ${{ secrets.GITHUB_TOKEN }}
+            --behavior=update
 
       
       
