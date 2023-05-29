@@ -17,7 +17,7 @@ permissions:
   id-token: write
   contents: read
   pull-requests: write
-  
+
 env:
   terraformVersion: 1.3.6
   terraformWorkDir: .
@@ -87,14 +87,14 @@ jobs:
 
       - name: Post Infracost comment
         if: steps.infracost-diff.outcome == 'success'
-        env:
-          GITHUB_TOKEN: ${{ secrets.BASE_GITHUB_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.BASE_GITHUB_TOKEN }}
         run: |
           infracost comment github \
             --path=/tmp/infracost.json \
            --pull-request=${{ github.event.number }} \
             --repo=${{ github.repository }} \
-            --github-token=${{ env.GITHUB_TOKEN }}
+            --github-token=${{ github.token }}
             --behavior=update
 
       
