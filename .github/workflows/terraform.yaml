@@ -7,7 +7,7 @@ on:
   push:
     branches:
       - main
-      # - DEVOPS-6-FIXES
+      - DEVOPS-6-FIXES
 
   pull_request:
     branches:
@@ -87,8 +87,6 @@ jobs:
 
       - name: Post Infracost comment
         if: steps.infracost-diff.outcome == 'success'
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.BASE_GITHUB_TOKEN }}
         run: |
           infracost comment github \
             --path=/tmp/infracost.json \
