@@ -95,7 +95,6 @@ jobs:
            --pull-request=${{ github.event.number }} \
             --repo=${{ github.repository }} \
             --github-token=${{ github.token }}
-            --behavior=update
 
       
       
