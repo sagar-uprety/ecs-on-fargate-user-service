@@ -89,7 +89,7 @@ jobs:
             --path=/tmp/infracost.json \
            --pull-request=${{ github.event.number }} \
             --repo=${{ github.repository }} \
-            --github-token= ${{ env.GITHUB_TOKEN }}
+            --github-token=${{ env.GITHUB_TOKEN }}
             --behavior=update
 
       
