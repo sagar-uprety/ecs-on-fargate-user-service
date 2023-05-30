@@ -25,15 +25,14 @@ Terraform default template module is a useful starting point for those who frequ
 - `.gitignore`: List of files to ignore in version control.
 - `.pre-commit-config.yaml`: Configuration file for pre-commit hooks.
 
-content = """
-Install terraform-docs or download from terraform-docs github repo.
+content = "Install terraform-docs or download from terraform-docs github repo."
 
 # Generate README.md file with .pre-commit-config.yaml configuration
 ### 1. Install dependencies
 
 <!-- markdownlint-disable no-inline-html -->
 
-* [`pre-commit`](https://pre-commit.com/#install),
+* [`pre-commit`](https://pre-commit.com/#install)
 * [`checkov`](https://github.com/bridgecrewio/checkov) required for `checkov` hook.
 * [`terraform-docs`](https://github.com/terraform-docs/terraform-docs) required for `terraform_docs` hook.
 * [`terrascan`](https://github.com/tenable/terrascan) required for `terrascan` hook.
