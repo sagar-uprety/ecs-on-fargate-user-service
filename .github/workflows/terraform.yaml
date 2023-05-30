@@ -57,6 +57,18 @@ jobs:
       - name:  Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
 
+      - name: Run Terratest
+        uses: cloudposse/github-action-terratest@main
+        with:
+            sourceDir: test
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.ADEX_POC }}:role/github_oidc
+          role-session-name: OIDCSession
+          aws-region: ${{ env.awsRegion }}
+
       - name: Setup Infracost
         uses: infracost/actions/setup@v2
         with:
