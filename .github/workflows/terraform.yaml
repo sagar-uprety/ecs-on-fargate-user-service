@@ -61,6 +61,7 @@ jobs:
         uses: cloudposse/github-action-terratest@main
         with:
             sourceDir: test
+            command: go test -v sample_vpc_test.go
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
