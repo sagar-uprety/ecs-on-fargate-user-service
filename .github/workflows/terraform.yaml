@@ -32,6 +32,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      - name: Install JQ Tool
+        uses: mbround18/install-jq@v1
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
