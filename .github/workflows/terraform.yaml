@@ -58,10 +58,9 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.0
 
       - name: Run Terratest
-        uses: cloudposse/github-action-terratest@main
-        with:
-            sourceDir: test
-            command: go test -v sample_vpc_test.go
+        run: |
+          cd ${{ env.terraformWorkDir }}/test
+          go test sample_test.go
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
