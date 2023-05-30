@@ -2,7 +2,6 @@
 
 Terraform default template module is a useful starting point for those who frequently use Terraform for their projects. Its pre-written required files and format of code saves time and effort and provides a consistent structure for all Terraform projects.
 
-
 ## Prerequisites
 
 - Terraform version: `x.x.x`
@@ -20,34 +19,22 @@ Terraform default template module is a useful starting point for those who frequ
 
 - `main.tf`:  This file is executed by Terraform to create, modify, or destroy the resources defined in it.
 - `variables.tf`: Variables can be used for a variety of purposes such as storing sensitive information, providing inputs to resources, or defining defaults for a module.
-- `versions.tf`: The versions.tf file in Terraform is used to set constraints on the Terraform version required for working with the configuration files. 
+- `versions.tf`: The versions.tf file in Terraform is used to set constraints on the Terraform version required for working with the configuration files.
 - `provider.tf`: The provider blocks in Terraform configuration files represent the cloud infrastructure or services that be managed by Terraform. Providers allow Terraform to deploy and manage resources in different cloud environments such as AWS, Azure, Google Cloud Platform, and more.
 - `outputs.tf`: Description of what this file does.
 - `.gitignore`: List of files to ignore in version control.
 - `.pre-commit-config.yaml`: Configuration file for pre-commit hooks.
 
-content = """
-Install terraform-docs or download from terraform-docs github repo.
+content = "Install terraform-docs or download from terraform-docs github repo."
 
 # Generate README.md file with .pre-commit-config.yaml configuration
 ### 1. Install dependencies
 
 <!-- markdownlint-disable no-inline-html -->
 
-* [`pre-commit`](https://pre-commit.com/#install),
-  <sub><sup>[`terraform`](https://www.terraform.io/downloads.html),
-  <sub><sup>[`git`](https://git-scm.com/downloads),
-  <sub><sup>POSIX compatible shell,
-  <sub><sup>Internet connection (on first run),
-  <sub><sup>x86_64 or arm64 compatible operation system,
-  <sub><sup>Some hardware where this OS will run,
-  <sub><sup>Electricity for hardware and internet connection,
-  <sub><sup>Some basic physical laws,
-  <sub><sup>Hope that it all will work.
-  </sup></sub></sup></sub></sup></sub></sup></sub></sup></sub></sup></sub></sup></sub></sup></sub></sup></sub><br><br>
+* [`pre-commit`](https://pre-commit.com/#install)
 * [`checkov`](https://github.com/bridgecrewio/checkov) required for `checkov` hook.
 * [`terraform-docs`](https://github.com/terraform-docs/terraform-docs) required for `terraform_docs` hook.
-* [`terragrunt`](https://terragrunt.gruntwork.io/docs/getting-started/install/) required for `terragrunt_validate` hook.
 * [`terrascan`](https://github.com/tenable/terrascan) required for `terrascan` hook.
 * [`TFLint`](https://github.com/terraform-linters/tflint) required for `terraform_tflint` hook.
 * [`TFSec`](https://github.com/liamg/tfsec) required for `terraform_tfsec` hook.
@@ -69,7 +56,7 @@ All available tags [here](https://github.com/antonbabenko/pre-commit-terraform/p
 
 **Build from scratch**:
 
-> **Note**: To build image you need to have [`docker buildx`](https://docs.docker.com/build/install-buildx/) enabled as default builder.  
+> **Note**: To build image you need to have [`docker buildx`](https://docs.docker.com/build/install-buildx/) enabled as default builder.
 > Otherwise - provide `TARGETOS` and `TARGETARCH` as additional `--build-arg`'s to `docker build`.
 
 When hooks-related `--build-arg`s are not specified, only the latest version of `pre-commit` and `terraform` will be installed.
@@ -170,7 +157,7 @@ Otherwise, you can follow [this gist](https://gist.github.com/etiennejeanneaurev
 
 Ensure your PATH environment variable looks for `bash.exe` in `C:\Program Files\Git\bin` (the one present in `C:\Windows\System32\bash.exe` does not work with `pre-commit.exe`)
 
-For `checkov`, you may need to also set your `PYTHONPATH` environment variable with the path to your Python modules.  
+For `checkov`, you may need to also set your `PYTHONPATH` environment variable with the path to your Python modules.
 E.g. `C:\Users\USERNAME\AppData\Local\Programs\Python\Python39\Lib\site-packages`
 
 </details>
@@ -299,3 +286,311 @@ To disable color output for all hooks, set `PRE_COMMIT_COLOR=never` var. Eg:
 ```bash
 PRE_COMMIT_COLOR=never pre-commit run
 ```
+
+### terraform_fmt
+
+1. `terraform_fmt` supports custom arguments so you can pass [supported flags](https://www.terraform.io/docs/cli/commands/fmt.html#usage). Eg:
+
+    ```yaml
+     - id: terraform_fmt
+       args:
+         - --args=-no-color
+         - --args=-diff
+         - --args=-write=false
+
+### terraform_providers_lock
+
+1. The hook requires Terraform 0.14 or later.
+2. The hook invokes two operations that can be really slow:
+    * `terraform init` (in case `.terraform` directory is not initialized)
+    * `terraform providers lock`
+
+    Both operations require downloading data from remote Terraform registries, and not all of that downloaded data or meta-data is currently being cached by Terraform.
+
+3. `terraform_providers_lock` supports custom arguments:
+
+    ```yaml
+     - id: terraform_providers_lock
+       args:
+          - --args=-platform=windows_amd64
+          - --args=-platform=darwin_amd64
+    ```
+
+4. It may happen that Terraform working directory (`.terraform`) already exists but not in the best condition (eg, not initialized modules, wrong version of Terraform, etc.). To solve this problem, you can find and delete all `.terraform` directories in your repository:
+
+    ```bash
+    echo "
+    function rm_terraform {
+        find . \( -iname ".terraform*" ! -iname ".terraform-docs*" \) -print0 | xargs -0 rm -r
+    }
+    " >>~/.bashrc
+
+    # Reload shell and use `rm_terraform` command in the repo root
+    ```
+
+    `terraform_providers_lock` hook will try to reinitialize directories before running the `terraform providers lock` command.
+
+5. `terraform_providers_lock` support passing custom arguments to its `terraform init`:
+
+    ```yaml
+    - id: terraform_providers_lock
+      args:
+        - --tf-init-args=-upgrade
+
+### terraform_tflint
+
+1. `terraform_tflint` supports custom arguments so you can enable module inspection, enable / disable rules, etc.
+
+    Example:
+
+    ```yaml
+    - id: terraform_tflint
+      args:
+        - --args=--module
+        - --args=--enable-rule=terraform_documented_variables
+    ```
+
+2. When you have multiple directories and want to run `tflint` in all of them and share a single config file, it is impractical to hard-code the path to the `.tflint.hcl` file. The solution is to use the `__GIT_WORKING_DIR__` placeholder which will be replaced by `terraform_tflint` hooks with Git working directory (repo root) at run time. For example:
+
+    ```yaml
+    - id: terraform_tflint
+      args:
+        - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+    ```
+
+3. By default pre-commit-terraform performs directory switching into the terraform modules for you. If you want to delgate the directory changing to the binary - this will allow tflint to determine the full paths for error/warning messages, rather than just module relative paths. *Note: this requires `tflint>=0.44.0`.* For example:
+
+    ```yaml
+    - id: terraform_tflint
+          args:
+            - --hook-config=--delegate-chdir
+
+### terraform_tfsec
+
+1. `terraform_tfsec` will consume modified files that pre-commit
+    passes to it, so you can perform whitelisting of directories
+    or files to run against via [files](https://pre-commit.com/#config-files)
+    pre-commit flag
+
+    Example:
+
+    ```yaml
+    - id: terraform_tfsec
+      files: ^prd-infra/
+    ```
+
+    The above will tell pre-commit to pass down files from the `prd-infra/` folder
+    only such that the underlying `tfsec` tool can run against changed files in this
+    directory, ignoring any other folders at the root level
+
+2. To ignore specific warnings, follow the convention from the
+[documentation](https://github.com/aquasecurity/tfsec#ignoring-warnings).
+
+    Example:
+
+    ```hcl
+    resource "aws_security_group_rule" "my-rule" {
+        type = "ingress"
+        cidr_blocks = ["0.0.0.0/0"] #tfsec:ignore:AWS006
+    }
+    ```
+
+3. `terraform_tfsec` supports custom arguments, so you can pass supported `--no-color` or `--format` (output), `-e` (exclude checks) flags:
+
+    ```yaml
+     - id: terraform_tfsec
+       args:
+         - >
+           --args=--format json
+           --no-color
+           -e aws-s3-enable-bucket-logging,aws-s3-specify-public-access-block
+    ```
+
+4. When you have multiple directories and want to run `tfsec` in all of them and share a single config file - use the `__GIT_WORKING_DIR__` placeholder. It will be replaced by `terraform_tfsec` hooks with Git working directory (repo root) at run time. For example:
+
+    ```yaml
+    - id: terraform_tfsec
+      args:
+        - --args=--config-file=__GIT_WORKING_DIR__/.tfsec.json
+    ```
+
+    Otherwise, will be used files that located in sub-folders:
+
+    ```yaml
+    - id: terraform_tfsec
+      args:
+        - --args=--config-file=.tfsec.json
+    ```
+### terrascan
+
+1. `terrascan` supports custom arguments so you can pass supported flags like `--non-recursive` and `--policy-type` to disable recursive inspection and set the policy type respectively:
+Example usage:
+    ```yaml
+    - id: terrascan
+      args:
+        - --args=--non-recursive # avoids scan errors on subdirectories without Terraform config files
+        - --args=--policy-type=azure
+    ```
+
+    See the `terrascan run -h` command line help for available options.
+
+2. Use the `--args=--verbose` parameter to see the rule ID in the scanning output. Useful to skip validations.
+3. Use `--skip-rules="ruleID1,ruleID2"` parameter to skip one or more rules globally while scanning (e.g.: `--args=--skip-rules="ruleID1,ruleID2"`).
+4. Use the syntax `#ts:skip=RuleID optional_comment` inside a resource to skip the rule for that resource.
+
+### infracost_breakdown
+
+`infracost_breakdown` executes `infracost breakdown` command and compare the estimated costs with those specified in the hook-config. `infracost breakdown` parses Terraform HCL code, and calls Infracost Cloud Pricing API (remote version or [self-hosted version](https://www.infracost.io/docs/cloud_pricing_api/self_hosted)).
+
+Unlike most other hooks, this hook triggers once if there are any changed files in the repository.
+
+1. `infracost_breakdown` supports all `infracost breakdown` arguments (run `infracost breakdown --help` to see them). The following example only shows costs:
+
+    ```yaml
+    - id: infracost_breakdown
+      args:
+        - --args=--path=./env/dev
+      verbose: true # Always show costs
+    ```
+    <!-- markdownlint-disable-next-line no-inline-html -->
+    <details><summary>Output</summary>
+
+    ```bash
+    Running in "env/dev"
+
+    Summary: {
+    "unsupportedResourceCounts": {
+        "aws_sns_topic_subscription": 1
+      }
+    }
+
+    Total Monthly Cost:        86.83 USD
+    Total Monthly Cost (diff): 86.83 USD
+    ```
+    <!-- markdownlint-disable-next-line no-inline-html -->
+    </details>
+
+2. Note that spaces are not allowed in `--args`, so you need to split it, like this:
+
+    ```yaml
+    - id: infracost_breakdown
+      args:
+        - --args=--path=./env/dev
+        - --args=--terraform-var-file="terraform.tfvars"
+        - --args=--terraform-var-file="../terraform.tfvars"
+    ```
+
+3. **Docker usage**. In `docker build` or `docker run` command:
+    * You need to provide [Infracost API key](https://www.infracost.io/docs/integrations/environment_variables/#infracost_api_key) via `-e INFRACOST_API_KEY=<your token>`. By default, it is saved in `~/.config/infracost/credentials.yml`
+    * Set `-e INFRACOST_SKIP_UPDATE_CHECK=true` to [skip the Infracost update check](https://www.infracost.io/docs/integrations/environment_variables/#infracost_skip_update_check) if you use this hook as part of your CI/CD pipeline.
+
+### terraform_docs
+
+1. `terraform_docs` and `terraform_docs_without_aggregate_type_defaults` will insert/update documentation generated by [terraform-docs](https://github.com/terraform-docs/terraform-docs) framed by markers:
+
+    ```txt
+    <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
+    <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+    ```
+
+    if they are present in `README.md`. It is possible to pass additional arguments to shell scripts while running terraform_docs.
+
+2. It is possible to automatically:
+    * create a documentation file
+    * extend existing documentation file by appending markers to the end of the file (see item 1 above)
+    * use different filename for the documentation (default is `README.md`)
+
+    ```yaml
+    - id: terraform_lint
+    - id: terraform_docs
+      args:
+        - --hook-config=--path-to-file=README.md        # Valid UNIX path. I.e. ../TFDOC.md or docs/README.md etc.
+        - --hook-config=--add-to-existing-file=true     # Boolean. true or false
+        - --hook-config=--create-file-if-not-exist=true # Boolean. true or false
+    ```
+
+4. You can provide [any configuration available in `terraform-docs`](https://terraform-docs.io/user-guide/configuration/) as an argument to `terraform_doc` hook, for example:
+
+    ```yaml
+    - id: terraform_docs
+      args:
+        - --args=--config=.terraform-docs.yml
+    ```
+
+    > **Warning**: Avoid use `recursive.enabled: true` in config file, that can cause unexpected behavior.
+
+5. If you need some exotic settings, it can be done too. I.e. this one generates HCL files:
+
+    ```yaml
+    - id: terraform_docs
+      args:
+        - tfvars hcl --output-file terraform.tfvars.model.
+
+## Testing is done with terratest in GOLANG
+TEST: `/test/sample_test.go`
+This code defines a test function to test a Terraform module using the Terratest library. The test function first constructs the Terraform options with default retryable errors to handle the most common retryable errors in Terraform testing. Then it sets the path to the Terraform code that will be tested by setting TerraformDir in the options. Next, it cleans up resources with "terraform destroy" at the end of the test by calling terraform.Destroy(). After that, it runs terraform init and terraform apply by calling terraform.InitAndApply() and fails the test if there are any errors. Finally, it runs terraform output to get the values of output variables and check they have the expected values by calling terraform.Output() and assert.Equal(), respectively.
+
+# Github Actions Workflow for Terraform
+
+This GitHub Actions workflow runs when changes are pushed or pulled to "main". The workflow has two jobs: `lint` and `plan_or_apply`.
+
+## Lint Job
+
+The `lint` job has several steps:
+
+1. Check out the code.
+2. Set up Terraform and run `terraform fmt --check`.
+3. Initialize Terraform, perform a security scan with Checkov, and validate Terraform configurations with `terraform validate -no-color`.
+4. Run `tfsec` for a security scan.
+5. Set up Infracost and check out the base branch.
+6. Generate an Infracost cost estimate alongside generating the Infracost diff on PR branch.
+7. Post an Infracost comment if the Infracost diff outcome is 'success' and the event is pull_request.
+
+## Plan_or_Apply Job
+
+The `plan_or_apply` job has several steps:
+
+1. Check out the code.
+2. Set up git repo credentials for Terraform modules and set up Terraform.
+3. Initialize Terraform and run `terraform plan`.
+4. If the plan is successful, upload the plan file, show the plan, and post the plan to the GitHub PR for review.
+5. If the plan fails, post the output to the GitHub PR.
+6. If the apply is successful, post the apply output to the GitHub PR.
+7. If the apply fails, post the apply output to the GitHub PR.
+
+This workflow incorporates Terraform, Checkov, tfsec, and Infracost to validate, scan, and estimate the cost of infrastructure changes before being merged.
+
+<!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 4.0 |
+
+## Providers
+
+No providers.
+
+## Modules
+
+No modules.
+
+## Resources
+
+No resources.
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_application"></a> [application](#input\_application) | Name of the application | `string` | `""` | no |
+| <a name="input_environment"></a> [environment](#input\_environment) | Working application environment eg: dev, stg, prd | `string` | `""` | no |
+| <a name="input_owner"></a> [owner](#input\_owner) | Name to be used on all the resources as identifier | `string` | `""` | no |
+| <a name="input_region"></a> [region](#input\_region) | Region be used for all the resources | `string` | `"us-east-1"` | no |
+
+## Outputs
+
+No outputs.
+<!-- END_TF_DOCS -->
