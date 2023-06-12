@@ -15,6 +15,7 @@ run-name: Tag and Release v${{ github.event.inputs.tag_name }}
 jobs:
   build:
     name: Create Release
+    environment: production
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
