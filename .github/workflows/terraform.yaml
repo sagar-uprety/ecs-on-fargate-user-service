@@ -57,7 +57,7 @@ jobs:
          quiet: true # optional: display only failed checks
 
       - name: Terraform Validate
-        run: terraform validate -no-color
+        uses: dflook/terraform-validate@v1
         with:
           path: examples/complete/
 
