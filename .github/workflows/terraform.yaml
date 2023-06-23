@@ -53,18 +53,17 @@ jobs:
       - name: Checkov
         uses: bridgecrewio/checkov-action@master
         with:
-         args: -d .
+         directory: .
+         quiet: true # optional: display only failed checks
 
       - name: Terraform Validate
-        run: terraform validate -no-color
+        uses: dflook/terraform-validate@v1
+        with:
+          path: .
+
 
       - name:  Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
-
-      - name: Run Terratest
-        run: |
-          cd ${{ env.terraformWorkDir }}/test
-          go test sample_test.go
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -72,6 +71,11 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.ADEX_POC }}:role/github_oidc
           role-session-name: OIDCSession
           aws-region: ${{ env.awsRegion }}
+
+      - name: Run Terratest
+        run: |
+          cd test
+          go test sample_test.go
 
       - name: Setup Infracost
         uses: infracost/actions/setup@v2
@@ -125,6 +129,13 @@ jobs:
           url."https://git:${{ env.githubToken }}@github.com/${{ env.terraformModulesGithubOrg }}".insteadOf \
           "https://github.com/${{ env.terraformModulesGithubOrg }}"
         shell: sh
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.ADEX_POC }}:role/github_oidc
+          role-session-name: OIDCSession
+          aws-region: ${{ env.awsRegion }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
