@@ -6,7 +6,7 @@ run-name: '[${{ github.event_name }} - ${{ github.ref_name }}] Terraform execute
 on:
   push:
     branches:
-      - main
+      - '**'
   pull_request:
     branches:
       - main
@@ -19,8 +19,11 @@ permissions:
 env:
   terraformVersion: 1.3.6
   terraformWorkDir: .
-  terraformModulesGithubOrg: terraform-aws-module-template
+  terraformModulesGithubOrg: ${{ github.repository}}/${{ github.ref_name}}
   awsRegion: us-east-1
+  terraformBucket: terraform-module-state-files
+  terraformDynamo: terraform-module-state-files
+
 
 jobs:
   lint:
@@ -44,11 +47,18 @@ jobs:
       - name: Terraform Format
         run: terraform fmt --check
 
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.ADEX_POC }}:role/github_oidc
+          role-session-name: OIDCSession
+          aws-region: ${{ env.awsRegion }}
+
       - name: Terraform Initialize
         id: init
         run: |
           cd ${{ env.terraformWorkDir }}
-          terraform init
+          terraform init -backend-config="bucket=${{ env.terraformBucket }}" -backend-config="dynamodb_table=${{ env.terraformDynamo }}" -backend-config="key=${{ env.terraformModulesGithubOrg}}"
 
       - name: Checkov
         uses: bridgecrewio/checkov-action@master
@@ -65,12 +75,6 @@ jobs:
       - name:  Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
 
-      - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.ADEX_POC }}:role/github_oidc
-          role-session-name: OIDCSession
-          aws-region: ${{ env.awsRegion }}
 
       - name: Run Terratest
         run: |

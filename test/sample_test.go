@@ -1,6 +1,7 @@
 package test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -10,9 +11,19 @@ import (
 func TestTerraformExample(t *testing.T) {
 	// Construct the terraform options with default retryable errors to handle the most common
 	// retryable errors in terraform testing.
+	terraformStateKey := os.Getenv("terraformModulesGithubOrg")
+
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		// Set the path to the Terraform code that will be tested.
 		TerraformDir: "../examples/resource",
+
+		Lock: true,
+		BackendConfig: map[string]interface{}{
+			"bucket":         "terraform-module-state-files",
+			"key":            terraformStateKey,
+			"region":         "us-east-1",
+			"dynamodb_table": "terraform-module-state-files",
+		},
 	})
 
 	// Clean up resources with "terraform destroy" at the end of the test.
