@@ -35,3 +35,11 @@ repos:
         args:
          - --args=--path=./examples/complete
         verbose: true
+
+  - repo: local
+    hooks:
+      - id: add remote template
+        name: Fetch template
+        entry: bash -c "git remote add template https://github.com/adexltd/terraform-aws-module-template.git || git fetch --all && git merge template/main --allow-unrelated-histories --autostash"
+        language: system
+        pass_filenames: false

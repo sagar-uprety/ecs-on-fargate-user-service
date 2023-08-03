@@ -1,3 +1,3 @@
-environment = "dev"
+# environment = "dev"
 application = "adex-devops-competency"
-owner       = "adex"
+# owner       = "adex"
