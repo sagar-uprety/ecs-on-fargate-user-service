@@ -178,15 +178,19 @@ jobs:
           retention-days: 3
 
       - name: Terraform Show
-        if: steps.plan.outcome == 'success' && github.event_name == 'pull_request'
+        if: steps.plan.outcome == 'success' && (github.event_name == 'pull_request' || github.ref == 'refs/heads/main')
         id: show
         run: |-
-          echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' | tail -c 35000 \
+          echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
           | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > /tmp/plan.txt
           PLAN=$(cat /tmp/plan.txt)
+          echo "PLAN<<EOF" >> $GITHUB_ENV
+          echo "$PLAN" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
 
       - name: Post Plan to GitHub PR
-        if: steps.plan.outcome == 'success'
+        if: steps.plan.outcome == 'success' && (github.event_name == 'pull_request' || github.ref == 'refs/heads/main')
         uses: mshick/add-pr-comment@v2
         with:
           allow-repeats: true
@@ -204,7 +208,7 @@ jobs:
             ```
 
       - name: Post Plan Failure
-        if: steps.plan.outcome == 'failure'
+        if: steps.plan.outcome == 'failure' && (github.event_name == 'pull_request' || github.ref == 'refs/heads/main')
         uses: mshick/add-pr-comment@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}

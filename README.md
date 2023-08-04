@@ -277,15 +277,16 @@ Config example:
     - --env-vars=AWS_SECRET_ACCESS_KEY="asecretkey"
 ```
 
-### All hooks: Disable color output
+### Fetch remote template
+> After fetching changes from remote base template you need to manually resolve the merge conflicts, and after resolving conflicts and staging you need to run following command:
 
-> All, except deprecated hooks: `checkov`, `terraform_docs_replace`
-
-To disable color output for all hooks, set `PRE_COMMIT_COLOR=never` var. Eg:
 
 ```bash
-PRE_COMMIT_COLOR=never pre-commit run
+git merge --continue
+
 ```
+> After merging changes you need to add and commit your changes
+
 
 ### terraform_fmt
 
