@@ -277,15 +277,13 @@ Config example:
     - --env-vars=AWS_SECRET_ACCESS_KEY="asecretkey"
 ```
 
-### All hooks: Disable color output
-
-> All, except deprecated hooks: `checkov`, `terraform_docs_replace`
-
-To disable color output for all hooks, set `PRE_COMMIT_COLOR=never` var. Eg:
-
+### Fetch remote template
+> After fetching changes from remote base template you need to manually resolve the merge conflicts, and after resolving conflicts you need to run following command:
 ```bash
-PRE_COMMIT_COLOR=never pre-commit run
+git merge --continue
 ```
+
+
 
 ### terraform_fmt
 
@@ -586,6 +584,8 @@ No resources.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_application"></a> [application](#input\_application) | Name of the application | `string` | `""` | no |
+| <a name="input_environment"></a> [environment](#input\_environment) | Working application environment eg: dev, stg, prd | `string` | `""` | no |
+| <a name="input_owner"></a> [owner](#input\_owner) | Name to be used on all the resources as identifier | `string` | `""` | no |
 | <a name="input_region"></a> [region](#input\_region) | Region be used for all the resources | `string` | `"us-east-1"` | no |
 
 ## Outputs
