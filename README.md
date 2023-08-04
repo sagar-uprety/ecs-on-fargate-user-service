@@ -278,7 +278,7 @@ Config example:
 ```
 
 ### Fetch remote template
-> After fetching changes from remote base template you need to manually resolve the merge conflicts, and after resolving conflicts you need to run following command:
+> After fetching changes from remote base template you need to manually resolve the merge conflicts, and after resolving conflicts and staging you need to run following command:
 ```bash
 git merge --continue
 ```
