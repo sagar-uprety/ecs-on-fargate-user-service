@@ -178,7 +178,7 @@ jobs:
           retention-days: 3
 
       - name: Terraform Show
-        if: steps.plan.outcome == 'success' && github.event_name == 'pull_request'
+        if: steps.plan.outcome == 'success'
         id: show
         run: |-
           echo '${{ steps.plan.outputs.stdout || steps.plan.outputs.stderr }}' \
