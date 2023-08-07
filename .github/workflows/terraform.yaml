@@ -160,7 +160,7 @@ jobs:
         id: init
         run: |
           cd ${{ env.terraformWorkDir }}
-          terraform init -backend-config="bucket=${{ env.terraformBucket }}" -backend-config="dynamodb_table=${{ env.terraformDynamo }}" -backend-config="key=${{ env.terraformS3Key}}" -backend-config="region =${{ env.awsRegion }}"
+          terraform init -backend-config="bucket=${{ env.terraformBucket }}" -backend-config="dynamodb_table=${{ env.terraformDynamo }}" -backend-config="key=${{ env.terraformS3Key}}" -backend-config="region=${{ env.awsRegion }}"
 
 
       - name: Terraform Plans
