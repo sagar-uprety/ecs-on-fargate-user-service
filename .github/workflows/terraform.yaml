@@ -18,7 +18,7 @@ permissions:
 
 env:
   terraformVersion: 1.3.6
-  terraformWorkDir: .
+  terraformWorkDir: ./examples/complete
   terraformS3Key: ${{ github.repository}}/${{ github.ref_name}}
   terraformModulesGithubOrg: ${{ github.repository_owner}}
   terraformBucket: terraform-module-state-files
@@ -67,7 +67,7 @@ jobs:
         id: init
         run: |
           cd ${{ env.terraformWorkDir }}
-          terraform init -backend-config="bucket=${{ env.terraformBucket }}" -backend-config="dynamodb_table=${{ env.terraformDynamo }}" -backend-config="key=${{ env.terraformS3Key}}" -backend-config="bucket=${{ env.awsRegion }}"
+          terraform init -backend-config="bucket=${{ env.terraformBucket }}" -backend-config="dynamodb_table=${{ env.terraformDynamo }}" -backend-config="key=${{ env.terraformS3Key}}" -backend-config="region=${{ env.awsRegion }}"
 
       - name: Terraform Format
         run: terraform fmt --check
@@ -160,7 +160,8 @@ jobs:
         id: init
         run: |
           cd ${{ env.terraformWorkDir }}
-          terraform init
+          terraform init -backend-config="bucket=${{ env.terraformBucket }}" -backend-config="dynamodb_table=${{ env.terraformDynamo }}" -backend-config="key=${{ env.terraformS3Key}}" -backend-config="region=${{ env.awsRegion }}"
+
 
       - name: Terraform Plans
         id: plan
