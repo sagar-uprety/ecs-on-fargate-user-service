@@ -160,7 +160,7 @@ jobs:
         id: init
         run: |
           cd ${{ env.terraformWorkDir }}
-          terraform init -backend-config="bucket=${{ env.terraformBucket }}" -backend-config="dynamodb_table=${{ env.terraformDynamo }}" -backend-config="key=${{ env.terraformS3Key}}" -backend-config="region=${{ env.awsRegion }}"
+          terraform init -backend-config="bucket=${{ env.terraformBucket }}" -backend-config="dynamodb_table=${{ env.terraformDynamo }}" -backend-config="key=${{ env.terraformS3Key}}" -backend-config=" =${{ env.awsRegion }}"
 
 
       - name: Terraform Plans
@@ -168,7 +168,7 @@ jobs:
         continue-on-error: true
         run: |
           cd ${{ env.terraformWorkDir }}
-          terraform plan -var-file="${{ env.terraformWorkDir }}/dev.tfvars" -no-color -out tf.plan
+          terraform plan -no-color -out tf.plan
 
       - name: Upload Terraform Plan File
         if: steps.plan.outcome == 'success' && github.event_name == 'pull_request'
