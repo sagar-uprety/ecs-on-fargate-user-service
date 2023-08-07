@@ -18,7 +18,7 @@ permissions:
 
 env:
   terraformVersion: 1.3.6
-  terraformWorkDir: ./examples/complete
+  terraformWorkDir: ./examples/resource
   terraformS3Key: ${{ github.repository}}/${{ github.ref_name}}
   terraformModulesGithubOrg: ${{ github.repository_owner}}
   terraformBucket: terraform-module-state-files
