@@ -6,13 +6,13 @@ run-name: '[${{ github.event_name }} - ${{ github.ref_name }}] Terraform execute
 on:
   push:
     paths-ignore:
-      - 'release.yml'
+      - '.github/workflows/release.yml'
       - 'CHANGELOG.md'
     branches:
       - '**'
   pull_request:
     paths-ignore:
-      - 'release.yml'
+      - '.github/workflows/release.yml'
       - 'CHANGELOG.md'
     branches:
       - main
