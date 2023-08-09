@@ -42,13 +42,13 @@ jobs:
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           bodyFile: /tmp/release-notes.txt
 
-      # - name: Add next release template
-      #   run: |
-      #     git config --global user.name "${{ github.actor }}"
-      #     git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-      #     RELEASE_DATE=`date +%B' '%e', '%Y`
-      #     sed -i -e "1 s/(Unreleased)/($RELEASE_DATE)/" CHANGELOG.md
-      #     sed -i '1i## x.y.z (Unreleased)\n\nBREAKING CHANGES:\n\nNOTES:\n\nFEATURES:\n\nENHANCEMENTS:\n\nBUG FIXES:\n\n\n' CHANGELOG.md
-      #     git add CHANGELOG.md
-      #     git commit -m "New changelog templated added after release of ${{ steps.tag_version.outputs.new_tag}}"
-      #     git push
+      - name: Add next release template
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          RELEASE_DATE=`date +%B' '%e', '%Y`
+          sed -i -e "1 s/(Unreleased)/($RELEASE_DATE)/" CHANGELOG.md
+          sed -i '1i## x.y.z (Unreleased)\n\nBREAKING CHANGES:\n\nNOTES:\n\nFEATURES:\n\nENHANCEMENTS:\n\nBUG FIXES:\n\n\n' CHANGELOG.md
+          git add CHANGELOG.md
+          git commit -m "New changelog templated added after release of ${{ steps.tag_version.outputs.new_tag}}"
+          git push
