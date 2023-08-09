@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 run-name: Tag and Release v${{ github.event.inputs.tag_name }}
 jobs:
@@ -25,6 +26,7 @@ jobs:
           PREVIOUS_RELEASE=$(cat CHANGELOG.md| grep '^## [0-9]\.[0-9]\.[0-9] (' | sed -n 2p)
           csplit -sf file -n 1 CHANGELOG.md "/$PREVIOUS_RELEASE/"
           mv file0 /tmp/release-notes.txt
+          rm file1
           RELEASE_DATE=`date +%B' '%e', '%Y`
           sed -i -e "1 s/(Unreleased)/($RELEASE_DATE)/" /tmp/release-notes.txt
 
@@ -51,4 +53,13 @@ jobs:
           sed -i '1i## x.y.z (Unreleased)\n\nBREAKING CHANGES:\n\nNOTES:\n\nFEATURES:\n\nENHANCEMENTS:\n\nBUG FIXES:\n\n\n' CHANGELOG.md
           git add CHANGELOG.md
           git commit -m "New changelog templated added after release of ${{ steps.tag_version.outputs.new_tag}}"
-          git push
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          delete-branch: true
+          commit-message: New changelog templated added after release of ${{ steps.tag_version.outputs.new_tag}}
+          title: New changelog templated added after release of ${{ steps.tag_version.outputs.new_tag}}
+          body: New changelog templated added after release of ${{ steps.tag_version.outputs.new_tag}}
+          branch: release-${{ steps.tag_version.outputs.new_tag}}
+          base: main
