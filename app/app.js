@@ -1,138 +1,104 @@
+// user-service.js
 const express = require("express");
 const app = express();
-const axios = require("axios"); // for making HTTP requests to other microservices
-const uuid = require("uuid"); // for generating random IDs
-const port = 3002; // Replace with your desired port
-
-const { DynamoDBClient, DeleteItemCommand } = require("@aws-sdk/client-dynamodb");
+const port = 3000;
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   PutCommand,
   ScanCommand,
   GetCommand,
   DynamoDBDocumentClient,
 } = require("@aws-sdk/lib-dynamodb");
+const fs = require("fs");
 
 const awsRegion = process.env.awsRegion || "us-east-2";
-const dynamodbTableName = process.env.dynamodbTableName || "ecs-orders-ms";
+const dynamodbTableName = process.env.dynamodbTableName || "ecs-users-ms";
 
 const client = new DynamoDBClient({ region: awsRegion });
 const docClient = DynamoDBDocumentClient.from(client);
 
-const userServiceURL = process.env.userServiceURL || "http://localhost:3000";
-const productServiceURL =
-  process.env.productServiceURL || "http://localhost:3001";
-
-// Middleware and configuration
-app.use(express.urlencoded({ extended: true }));
-app.set("view engine", "ejs");
-
-// Sample route for listing products and buying them
-app.get("/orders/shop", async (req, res) => {
+app.get("/users", async (req, res) => {
   try {
-    // Fetch product list from the product microservice
-    const productsResponse = await axios.get(`${productServiceURL}/products`);
-    // Render the EJS template with the product list
-    res.render("shop", { products: productsResponse.data });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error fetching products.");
+    const usersData = await checkIfDataExists();
+    res.json(usersData);
   }
-});
-
-// Handle the buy button click and create an order
-app.post("/orders/create", async (req, res) => {
-  try {
-    const { productId, productName, price } = req.body;
-    const user = await getRandomUser(); // Call user microservice to get a random user
-    // Generate random order data
-    const order = {
-      id: uuid.v4(),
-      buyerId: user.id,
-      buyerName: user.name,
-      buyerAddress: user.address,
-      productId,
-      productName,
-      price: parseFloat(price),
-      orderDate: new Date().toISOString,
-      paymentMethod: getRandomPaymentMethod(),
-    };
-
-    const command = new PutCommand({
-      TableName: dynamodbTableName,
-      Item: order,
-    });
-
-    try {
-      await docClient.send(command);
-      console.log(`Created order with ID ${order.id} for Product ID: ${productId} into DynamoDB`);
-    } catch (error) {
-      console.error(
-        `Error inserting products with ID ${productId}: ${error.message}`
-      );
-    }
-    res.send(`Order Created Successfully with Order ID : ${order.id}`);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error creating the order.");
-  }
-});
-
-// Sample route for viewing orders
-app.get("/orders", async (req, res) => {
-  try {
-    const ordersData = await checkIfDataExists();
-    res.json(ordersData);
-  } catch (error) {
+  catch (error) {
     console.error(`Error: ${error.message}`);
   }
 });
 
-//Delete Route
-app.get("/orders/delete/:id", async (req, res) => {
-  const orderId = req.params.id;
 
-  const command = new DeleteItemCommand({
-    TableName: dynamodbTableName,
-    Key: {
-      id: { S: orderId }, // Assuming the "id" is a string
-    },
-  });
-
+// Route to insert data for seeding the DynamoDB table
+app.get("/users/insertuserdata", async (req, res) => {
   try {
-    const response = await docClient.send(command);
-    console.log(`Deleted order with ID ${orderId} from DynamoDB`);
-    res.send(`Order with ID ${orderId} deleted successfully`);
+    // Check if the data already exists in the DynamoDB table
+    const existingData = await checkIfDataExists();
+    if (existingData.length > 0) {
+      return res
+        .status(200)
+        .json({
+          message: "Data already exists in the table. No action required.",
+        });
+    }
+
+    // If data doesn't exist, read the data from users.json file
+    const userData = JSON.parse(fs.readFileSync("./data/users.json", "utf8"));
+    // console.log(userData);
+
+    // Loop through each user record and insert it into the DynamoDB table
+    for (const user of userData) {
+      const command = new PutCommand({
+        TableName: dynamodbTableName,
+        Item: {
+          id: user.id.toString(),
+          name: user.name ,
+          email: user.email ,
+          address: user.address ,
+          phone: user.phone ,
+        },
+      });
+
+      try {
+        await docClient.send(command);
+        console.log(`Inserted user with ID ${user.id} into DynamoDB`);
+      } catch (error) {
+        console.error(
+          `Error inserting user with ID ${user.id}: ${error.message}`
+        );
+      }
+    }
+
+    res.status(200).json({ message: "Data insertion completed." });
   } catch (error) {
-    console.error(`Error deleting order with ID ${orderId}: ${error.message}`);
-    res.status(500).send(`Error deleting order with ID ${orderId}`);
+    console.error(`Error: ${error.message}`);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// Helper function to get a random user (call your user microservice here)
-async function getRandomUser() {
-  // Implement logic to fetch a random user from your user microservice
+// Route to get user data by ID from DynamoDB
+app.get("/users/:id", async (req, res) => {
   try {
-    const users = await axios.get(`${userServiceURL}/users`);
-    if (!users.data || users.data.length === 0) {
-      return null; // Handle the case when no users are available.
+    const userId = req.params.id;
+
+    const command = new GetCommand({
+      TableName: dynamodbTableName, // Replace with your DynamoDB table name
+      Key: {
+        id: userId,
+      },
+    });
+
+    const response = await docClient.send(command);
+
+    if (response.Item) {
+      res.status(200).json(response.Item);
+    } else {
+      res.status(404).json({ message: "User not found" });
     }
-
-    // Pick a random user from the list.
-    const randomIndex = Math.floor(Math.random() * users.data.length);
-    const randomUser = users.data[randomIndex];
-    return randomUser;
   } catch (error) {
-    console.error("Error fetching random user:", error);
-    throw error; // You can handle or log the error as needed.
+    console.error(`Error: ${error.message}`);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
-
-// Helper function to get a random payment method
-function getRandomPaymentMethod() {
-  const paymentMethods = ["COD", "Card", "PayPal"];
-  const randomIndex = Math.floor(Math.random() * paymentMethods.length);
-  return paymentMethods[randomIndex];
-}
+});
 
 async function checkIfDataExists() {
   const scanCommand = new ScanCommand({
@@ -144,5 +110,5 @@ async function checkIfDataExists() {
 }
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`User service is running on port ${port}`);
 });

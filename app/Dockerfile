@@ -1,4 +1,3 @@
-# Dockerfile for order-service
 FROM --platform=linux/amd64 node:lts-alpine
 
 WORKDIR /app
@@ -9,6 +8,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3002
+EXPOSE 3000
 
 ENTRYPOINT [ "node", "app.js" ]
