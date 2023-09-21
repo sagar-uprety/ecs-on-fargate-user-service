@@ -128,6 +128,15 @@ module "user_service" {
       source_security_group_id = data.terraform_remote_state.base_resources.outputs.security_group_id
     }
 
+    alb_ingress_internal = {
+      type        = "ingress"
+      from_port   = var.container_port
+      to_port     = var.container_port
+      protocol    = "tcp"
+      description = "User Service Port"
+      cidr_blocks = ["10.0.0.0/8", "127.0.0.0/8"]
+    }
+
     egress_all = {
       type        = "egress"
       from_port   = 0
