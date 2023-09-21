@@ -128,7 +128,7 @@ module "user_service" {
       source_security_group_id = data.terraform_remote_state.base_resources.outputs.security_group_id
     }
 
-    alb_ingress_internal = {
+    internal_communication = {
       type        = "ingress"
       from_port   = var.container_port
       to_port     = var.container_port
