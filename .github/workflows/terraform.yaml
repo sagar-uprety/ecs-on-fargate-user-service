@@ -80,9 +80,9 @@ jobs:
 
       # - name: Checkov
       #   uses: bridgecrewio/checkov-action@master
-        with:
-         directory: .
-         quiet: true # optional: display only failed checks
+        # with:
+        #  directory: .
+        #  quiet: true # optional: display only failed checks
 
       - name: Terraform Validate
         run: |
