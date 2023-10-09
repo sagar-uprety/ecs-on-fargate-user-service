@@ -1,11 +1,6 @@
 ################################################################################
 # Defines the resources to be created
 ################################################################################
-################################################################################
-# Defines the resources to be created
-################################################################################
-
-#user_Service
 
 data "terraform_remote_state" "base_resources" {
   backend = "s3"
@@ -17,6 +12,7 @@ data "terraform_remote_state" "base_resources" {
   }
 }
 
+# User Service
 module "user_service" {
   source  = "terraform-aws-modules/ecs/aws//modules/service"
   version = "5.2.2"
